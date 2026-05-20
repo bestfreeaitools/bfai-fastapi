@@ -9,10 +9,17 @@ logger = logging.getLogger(__name__)
 redis_client: Redis | None = None
 
 
+def _is_valid_redis_url(redis_url: str) -> bool:
+    return redis_url.startswith(("redis://", "rediss://"))
+
+
 async def init_redis() -> None:
     global redis_client
     if not settings.redis_url:
         logger.warning("REDIS_URL is not configured; redis disabled")
+        return
+    if not _is_valid_redis_url(settings.redis_url):
+        logger.warning("REDIS_URL is invalid; redis disabled")
         return
 
     redis_client = Redis.from_url(

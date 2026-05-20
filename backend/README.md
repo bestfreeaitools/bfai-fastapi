@@ -39,6 +39,6 @@ uvicorn app.main:app --reload
 - Set secrets in Coolify environment variables, not in Git.
 - Keep `DOCS_ENABLED=false` in production unless docs are protected.
 - Use Supabase's pooler connection string for serverless or container platforms with many replicas.
-- Keep `CORS_ORIGINS` restricted to your frontend domains.
+- Keep `CORS_ORIGINS` restricted to your frontend domains. Use comma-separated values, for example `https://bestfreeaitools.io,https://www.bestfreeaitools.io`.
 - Coolify should use `/health` as the health check path and expose port `8000`.
 - The container binds to `0.0.0.0` and respects Coolify's `PORT` environment variable.

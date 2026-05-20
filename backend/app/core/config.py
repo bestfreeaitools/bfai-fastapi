@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import AnyHttpUrl, Field, field_validator
+from pydantic import AnyHttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     app_name: str = "BFAI API"
     app_version: str = "0.1.0"
     environment: str = "production"
+    app_env: str | None = None
     debug: bool = False
     docs_enabled: bool = False
     log_level: str = "INFO"
@@ -20,9 +21,9 @@ class Settings(BaseSettings):
     openrouter_base_url: AnyHttpUrl = "https://openrouter.ai/api/v1"
     openrouter_app_title: str = "BFAI API"
 
-    cors_origins: list[str] = Field(default_factory=list)
+    cors_origins: str = ""
     cors_allow_credentials: bool = False
-    allowed_hosts: list[str] = Field(default_factory=lambda: ["*"])
+    allowed_hosts: str = "*"
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -31,16 +32,21 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    @field_validator("cors_origins", "allowed_hosts", mode="before")
-    @classmethod
-    def parse_csv(cls, value: str | list[str]) -> list[str]:
-        if isinstance(value, str):
-            return [item.strip() for item in value.split(",") if item.strip()]
-        return value
+    def _parse_csv(self, value: str) -> list[str]:
+        return [item.strip() for item in value.split(",") if item.strip()]
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return self._parse_csv(self.cors_origins)
+
+    @property
+    def allowed_host_list(self) -> list[str]:
+        hosts = self._parse_csv(self.allowed_hosts)
+        return hosts or ["*"]
 
     @property
     def is_production(self) -> bool:
-        return self.environment.lower() == "production"
+        return (self.app_env or self.environment).lower() == "production"
 
 
 @lru_cache

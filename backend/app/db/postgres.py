@@ -12,6 +12,10 @@ engine: AsyncEngine | None = None
 SessionLocal: async_sessionmaker[AsyncSession] | None = None
 
 
+def _is_valid_database_url(database_url: str) -> bool:
+    return database_url.startswith(("postgresql://", "postgresql+asyncpg://"))
+
+
 def _normalize_database_url(database_url: str) -> str:
     if database_url.startswith("postgresql://"):
         database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
@@ -29,6 +33,9 @@ async def init_db() -> None:
     global engine, SessionLocal
     if not settings.database_url:
         logger.warning("DATABASE_URL is not configured; database disabled")
+        return
+    if not _is_valid_database_url(settings.database_url):
+        logger.warning("DATABASE_URL is invalid; database disabled")
         return
 
     engine = create_async_engine(
