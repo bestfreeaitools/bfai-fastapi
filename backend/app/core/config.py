@@ -42,7 +42,11 @@ class Settings(BaseSettings):
     @property
     def allowed_host_list(self) -> list[str]:
         hosts = self._parse_csv(self.allowed_hosts)
-        return hosts or ["*"]
+        if not hosts or "*" in hosts:
+            return ["*"]
+
+        healthcheck_hosts = ["localhost", "127.0.0.1", "::1"]
+        return list(dict.fromkeys([*hosts, *healthcheck_hosts]))
 
     @property
     def is_production(self) -> bool:
