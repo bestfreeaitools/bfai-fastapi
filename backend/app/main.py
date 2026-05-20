@@ -1,15 +1,18 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.exceptions import RequestValidationError
+from starlette.responses import JSONResponse
 
 from app.api.router import api_router
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.db.postgres import close_db, init_db
 from app.db.redis import close_redis, init_redis
+from app.middleware.api_key_auth import APIKeyAuthMiddleware
 from app.middleware.error_handler import ErrorHandlerMiddleware
 
 
@@ -34,6 +37,7 @@ app = FastAPI(
 )
 
 app.add_middleware(ErrorHandlerMiddleware)
+app.add_middleware(APIKeyAuthMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(
     TrustedHostMiddleware,
@@ -48,6 +52,27 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.api_prefix)
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    if isinstance(exc.detail, dict) and "message" in exc.detail and "code" in exc.detail:
+        error = exc.detail
+    else:
+        error = {"message": str(exc.detail), "code": "HTTP_ERROR"}
+
+    return JSONResponse(status_code=exc.status_code, content={"success": False, "error": error})
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "success": False,
+            "error": {"message": "Request validation failed", "code": "VALIDATION_ERROR"},
+        },
+    )
 
 
 @app.get("/")

@@ -6,3 +6,4 @@ redis==7.1.0
 httpx[http2]==0.28.1
 pydantic-settings==2.14.0
 python-dotenv==1.2.2
+youtube-transcript-api==0.6.2

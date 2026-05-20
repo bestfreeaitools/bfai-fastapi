@@ -1,8 +1,8 @@
-import httpx
 from fastapi import HTTPException, status
 
 from app.core.config import settings
 from app.schemas.openrouter import ChatCompletionRequest
+from app.services.openrouter_service import get_openrouter_client
 
 
 class OpenRouterService:
@@ -17,38 +17,21 @@ class OpenRouterService:
                 detail="OpenRouter API key is not configured",
             )
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": str(settings.site_url or "https://bestfreeaitools.io"),
-            "X-Title": settings.openrouter_app_title,
+        client = get_openrouter_client()
+        result = await client.generate_completion(
+            messages=[message.model_dump() for message in payload.messages],
+            max_tokens=payload.max_tokens,
+            temperature=payload.temperature,
+        )
+        return {
+            "model": result.model,
+            "choices": [{"message": {"role": "assistant", "content": result.content}}],
+            "usage": {
+                "prompt_tokens": result.prompt_tokens,
+                "completion_tokens": result.completion_tokens,
+                "total_tokens": result.total_tokens,
+            },
         }
-
-        try:
-            async with httpx.AsyncClient(timeout=60) as client:
-                response = await client.post(
-                    f"{self.base_url}/chat/completions",
-                    headers=headers,
-                    json=payload.model_dump(exclude_none=True),
-                )
-        except httpx.RequestError as exc:
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="OpenRouter request failed",
-            ) from exc
-
-        if response.status_code >= 400:
-            try:
-                detail = response.json()
-            except ValueError:
-                detail = response.text
-
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=detail,
-            )
-
-        return response.json()
 
 
 def get_openrouter_service() -> OpenRouterService:

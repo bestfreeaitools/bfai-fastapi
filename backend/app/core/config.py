@@ -20,6 +20,21 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
     openrouter_base_url: AnyHttpUrl = "https://openrouter.ai/api/v1"
     openrouter_app_title: str = "BFAI API"
+    openrouter_fast_model: str = "deepseek/deepseek-v4-flash:free"
+    openrouter_smart_model: str = "z-ai/glm-4.5-air:free"
+    openrouter_fallback_model: str = "openai/gpt-oss-120b:free"
+    openrouter_timeout_seconds: float = 60
+    openrouter_max_retries: int = 2
+
+    youtube_summary_cache_ttl_seconds: int = 86400
+    youtube_transcript_timeout_seconds: float = 20
+    youtube_summary_max_tokens: int = 900
+    youtube_summary_temperature: float = 0.2
+    youtube_summary_max_transcript_chars: int = 30000
+    ai_prompt_cost_per_million_tokens: float = 0
+    ai_completion_cost_per_million_tokens: float = 0
+
+    api_key_auth_enabled: bool = True
 
     cors_origins: str = ""
     cors_allow_credentials: bool = False

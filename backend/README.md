@@ -43,3 +43,13 @@ uvicorn app.main:app --reload
 - Coolify should use `/health` as the health check path and expose port `8000`.
 - The container binds to `0.0.0.0` and respects Coolify's `PORT` environment variable.
 - `localhost`, `127.0.0.1`, and `::1` are allowed internally so Docker/Coolify health checks can pass with `TrustedHostMiddleware` enabled.
+
+## API Keys
+
+Apply `db/schema.sql` in Supabase, then create a key:
+
+```bash
+python scripts/create_api_key.py user@example.com "Production key"
+```
+
+Use the printed value as `Authorization: Bearer YOUR_API_KEY`.

@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 
-from app.api.routes import health, openrouter
+from app.api.routes import health, openrouter, youtube_summarizer
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
 api_router.include_router(openrouter.router, prefix="/openrouter", tags=["openrouter"])
+api_router.include_router(youtube_summarizer.router, tags=["youtube-summarizer"])
