@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     site_url: AnyHttpUrl | None = None
 
     database_url: str = ""
+    database_connect_timeout_seconds: int = 10
     redis_url: str = ""
     openrouter_api_key: str = ""
     openrouter_base_url: AnyHttpUrl = "https://openrouter.ai/api/v1"

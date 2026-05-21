@@ -44,6 +44,11 @@ async def init_db() -> None:
         pool_size=5,
         max_overflow=10,
         pool_recycle=1800,
+        pool_timeout=settings.database_connect_timeout_seconds,
+        connect_args={
+            "timeout": settings.database_connect_timeout_seconds,
+            "command_timeout": settings.database_connect_timeout_seconds,
+        },
     )
     SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
